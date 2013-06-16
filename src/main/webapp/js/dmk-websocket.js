@@ -3,8 +3,9 @@
 
   window.WebsocketHelper = (function() {
 
-    function WebsocketHelper(location) {
-      this.location = location != null ? location : "ws://localhost:8080/dmk-websocket/echo";
+    function WebsocketHelper(location, onopen) {
+      this.location = location != null ? location : "ws://localhost:8080/sys-mon/echo";
+      this.onopen = onopen;
       this.ws = void 0;
     }
 
@@ -21,14 +22,18 @@
         json = JSON.parse(event.data);
         return console.log(json);
       };
-      this.ws.onopen = function() {
-        var msg;
-        console.log("opened connection");
-        msg = {
-          msg: "hello"
+      if (!this.onopen) {
+        this.ws.onopen = function() {
+          var msg;
+          console.log("opened connection");
+          msg = {
+            msg: "hello"
+          };
+          return _this.send(msg);
         };
-        return _this.send(msg);
-      };
+      } else {
+        this.ws.onopen = this.onopen;
+      }
       this.ws.onclose = function() {
         return console.log("closed connection");
       };

@@ -1,7 +1,7 @@
 #>>lang=cf
 
 class window.WebsocketHelper
-  constructor: (@location = "ws://localhost:8080/dmk-websocket/echo") ->
+  constructor: (@location = "ws://localhost:8080/sys-mon/echo", @onopen) ->
     @ws = undefined
 
   connect: (@location) ->
@@ -13,12 +13,15 @@ class window.WebsocketHelper
       console.log "#{event.data}"
       json = JSON.parse event.data
       console.log json
-  
-    @ws.onopen = () =>
-      console.log "opened connection"
-      msg = msg: "hello"
-      this.send msg
-  
+
+    if !@onopen  
+      @ws.onopen = () =>
+        console.log "opened connection"
+        msg = msg: "hello"
+        this.send msg
+    else
+      @ws.onopen = @onopen
+    
     @ws.onclose = () ->
       console.log "closed connection"
     

@@ -74,6 +74,8 @@ public class EchoEndpoint implements ServletContextListener {
 			logger.debug("endpoint connection opened " + session.getId());
 		}
 		session.getBasicRemote().sendText("{ \"msg\": \"hello. connection acknowledged.\" }");
+		
+		
 	}
 
 	@OnClose
