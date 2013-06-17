@@ -30,6 +30,7 @@ import dmk.sysmon.common.domain.SysEvent;
  * @author dmknopp
  *
  */
+@Ignore
 public class SysEventIngestControllerTest {
 	protected static Logger logger = LoggerFactory
 			.getLogger(SysEventIngestControllerTest.class);

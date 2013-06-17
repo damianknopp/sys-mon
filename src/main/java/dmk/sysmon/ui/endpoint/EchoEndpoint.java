@@ -2,6 +2,7 @@ package dmk.sysmon.ui.endpoint;
 
 import java.io.IOException;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
@@ -17,6 +18,8 @@ import javax.websocket.server.ServerEndpoint;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import dmk.sysmon.common.service.listener.StatefulSysEventListener;
 
 /**
  * Bare bone JSR 356 websocket
@@ -53,7 +56,9 @@ import org.slf4j.LoggerFactory;
 public class EchoEndpoint implements ServletContextListener {
 	private static final Logger logger = LoggerFactory
 			.getLogger(EchoEndpoint.class);
-
+	
+	private ServletContext servletContext;
+	
 	public EchoEndpoint() {
 		super();
 		logger.info("newing up echo endpoint");
@@ -93,9 +98,16 @@ public class EchoEndpoint implements ServletContextListener {
 	}
 
 	public void contextInitialized(ServletContextEvent servletContextEvent) {
+		servletContext = servletContextEvent.getServletContext();
+		registerWebSocketEndpoint();
+	}
+
+	public void contextDestroyed(ServletContextEvent sce) {
+	}
+	
+	public void registerWebSocketEndpoint(){
 		Object serverContainer = null;
-		serverContainer = servletContextEvent.getServletContext()
-				.getAttribute("javax.websocket.server.ServerContainer");
+		serverContainer = servletContext.getAttribute("javax.websocket.server.ServerContainer");
 
 		try {
 			logger.info("is a jsr 356 compliant server? " + serverContainer);
@@ -114,9 +126,6 @@ public class EchoEndpoint implements ServletContextListener {
 		} catch (DeploymentException e) {
 			e.printStackTrace();
 		}
-	}
-
-	public void contextDestroyed(ServletContextEvent sce) {
 	}
 
 }

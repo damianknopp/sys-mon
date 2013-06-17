@@ -9,19 +9,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.View;
-import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.view.ContentNegotiatingViewResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.json.MappingJacksonJsonView;
 
-import com.espertech.esper.client.EPAdministrator;
 import com.espertech.esper.client.EPServiceProvider;
 import com.espertech.esper.client.EPServiceProviderManager;
-import com.espertech.esper.client.EPStatement;
 
 import dmk.sysmon.common.domain.SysEvent;
-import dmk.sysmon.common.service.listener.EchoSysEventListener;
  
 @Configuration
 @EnableWebMvc
@@ -68,17 +64,12 @@ public class WebConfig {
     	return vr;
     }
     
-    @Bean(name="eventEngine")
+    @Bean(name="epService")
     public EPServiceProvider eventEngine(){
     	com.espertech.esper.client.Configuration cepConfig = new com.espertech.esper.client.Configuration();
 		cepConfig.addEventType("SysEvent", SysEvent.class.getName());
 		EPServiceProvider epService = EPServiceProviderManager.getProvider(
 				"myCEPEngine", cepConfig);
-		EPAdministrator esperAdmin = epService.getEPAdministrator();
-		final String epl = String
-				.format("select * from SysEvent.win:time_batch(2 sec)");
-		EPStatement eplStatement = esperAdmin.createEPL(epl);
-		eplStatement.addListener(new EchoSysEventListener());
 		return epService;
     }
 }

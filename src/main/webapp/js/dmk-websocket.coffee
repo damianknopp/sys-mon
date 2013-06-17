@@ -1,7 +1,7 @@
 #>>lang=cf
 
 class window.WebsocketHelper
-  constructor: (@location = "ws://localhost:8080/sys-mon/echo", @onopen) ->
+  constructor: (@location = "ws://localhost:8080/sys-mon/echo", @onopen, @onmessge, @onclose) ->
     @ws = undefined
 
   connect: (@location) ->
@@ -9,11 +9,14 @@ class window.WebsocketHelper
     @ws  = new WebSocket(target)
     console.log @ws
     
-    @ws.onmessage = (event) ->
-      console.log "#{event.data}"
-      json = JSON.parse event.data
-      console.log json
-
+    if !@onmessage
+      @ws.onmessage = (event) ->
+        console.log "#{event.data}"
+        json = JSON.parse event.data
+        console.log json
+    else
+      @ws.onmessage = @onmessage
+      
     if !@onopen  
       @ws.onopen = () =>
         console.log "opened connection"
@@ -22,9 +25,11 @@ class window.WebsocketHelper
     else
       @ws.onopen = @onopen
     
-    @ws.onclose = () ->
-      console.log "closed connection"
-    
+    if !@onclose
+      @ws.onclose = () ->
+        console.log "closed connection"
+    else
+      @ws.onclose = @onclose
     @ws
 
   # if not connected, connects to websocket endpoint

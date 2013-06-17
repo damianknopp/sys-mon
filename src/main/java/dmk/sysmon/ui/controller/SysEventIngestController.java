@@ -19,11 +19,10 @@ public class SysEventIngestController {
 	protected static Logger logger = LoggerFactory
 			.getLogger(SysEventIngestController.class);
 
+	@Autowired
     SysEventService eventService;
      
-    @Autowired
-    public SysEventIngestController(SysEventService service) {
-        this.eventService = service;
+    public SysEventIngestController() {
     }
 
     @RequestMapping(value="/index", method = RequestMethod.GET, produces = "*/*")
@@ -41,5 +40,13 @@ public class SysEventIngestController {
     	}
     	this.eventService.ingest(event);
         return event;
+    }
+
+    public SysEventService getEventService() {
+    	return eventService;
+    }
+    
+    public void setEventService(SysEventService eventService) {
+    	this.eventService = eventService;
     }
 }

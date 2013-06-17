@@ -3,9 +3,11 @@
 
   window.WebsocketHelper = (function() {
 
-    function WebsocketHelper(location, onopen) {
+    function WebsocketHelper(location, onopen, onmessge, onclose) {
       this.location = location != null ? location : "ws://localhost:8080/sys-mon/echo";
       this.onopen = onopen;
+      this.onmessge = onmessge;
+      this.onclose = onclose;
       this.ws = void 0;
     }
 
@@ -16,12 +18,16 @@
       target = this.location;
       this.ws = new WebSocket(target);
       console.log(this.ws);
-      this.ws.onmessage = function(event) {
-        var json;
-        console.log("" + event.data);
-        json = JSON.parse(event.data);
-        return console.log(json);
-      };
+      if (!this.onmessage) {
+        this.ws.onmessage = function(event) {
+          var json;
+          console.log("" + event.data);
+          json = JSON.parse(event.data);
+          return console.log(json);
+        };
+      } else {
+        this.ws.onmessage = this.onmessage;
+      }
       if (!this.onopen) {
         this.ws.onopen = function() {
           var msg;
@@ -34,9 +40,13 @@
       } else {
         this.ws.onopen = this.onopen;
       }
-      this.ws.onclose = function() {
-        return console.log("closed connection");
-      };
+      if (!this.onclose) {
+        this.ws.onclose = function() {
+          return console.log("closed connection");
+        };
+      } else {
+        this.ws.onclose = this.onclose;
+      }
       return this.ws;
     };
 
