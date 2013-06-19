@@ -8,8 +8,10 @@ import java.util.Map;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter;
 import org.springframework.web.servlet.view.ContentNegotiatingViewResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.json.MappingJacksonJsonView;
@@ -17,6 +19,7 @@ import org.springframework.web.servlet.view.json.MappingJacksonJsonView;
 import com.espertech.esper.client.EPServiceProvider;
 import com.espertech.esper.client.EPServiceProviderManager;
 
+import dmk.sysmon.common.client.converter.CustomJsonMessageConverter;
 import dmk.sysmon.common.domain.SysEvent;
  
 @Configuration
@@ -71,5 +74,20 @@ public class WebConfig {
 		EPServiceProvider epService = EPServiceProviderManager.getProvider(
 				"myCEPEngine", cepConfig);
 		return epService;
+    }
+    
+    @Bean
+    public AnnotationMethodHandlerAdapter annotationMethodHandlerAdapter(){
+    	AnnotationMethodHandlerAdapter adapter = new AnnotationMethodHandlerAdapter();
+    	final CustomJsonMessageConverter mc = messageConverter();
+    	HttpMessageConverter<?>[] messageConverters = new HttpMessageConverter<?>[1];
+    	messageConverters[0] = mc;
+    	adapter.setMessageConverters(messageConverters);
+    	return adapter;
+    }
+    
+    @Bean 
+    public CustomJsonMessageConverter messageConverter(){
+    	return new CustomJsonMessageConverter();
     }
 }

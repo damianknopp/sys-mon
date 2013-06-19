@@ -21,16 +21,22 @@ import org.springframework.http.converter.HttpMessageNotWritableException;
 import dmk.sysmon.common.domain.SysEvent;
 
 public class CustomJsonMessageConverter implements HttpMessageConverter<SysEvent> {
-	protected static Logger logger = LoggerFactory
+	protected Logger logger = LoggerFactory
 			.getLogger(CustomJsonMessageConverter.class);
 
+	public CustomJsonMessageConverter(){
+		super();
+		logger.debug("new custom message converter");
+	}
 	
     public List<MediaType> getSupportedMediaTypes() {
-        return Arrays.asList(new MediaType("application", "json"),
+    	logger.debug("supported media types");
+    	return Arrays.asList(new MediaType("application", "json"),
         		MediaType.APPLICATION_JSON);
     }
  
     public boolean supports(Class<? extends SysEvent> clazz) {
+    	logger.debug("supports " + clazz);
         return SysEvent.class.equals(clazz);
     }
  
@@ -40,8 +46,8 @@ public class CustomJsonMessageConverter implements HttpMessageConverter<SysEvent
     	ObjectMapper mapper = new ObjectMapper(factory);
     	final String json = IOUtils.toString(is);
     	
+    	logger.debug("found string " + json);
     	if(logger.isTraceEnabled()){
-    		logger.debug("found string " + json);
     	}
     	
     	final JsonNode jn = mapper.readTree(json);
@@ -56,12 +62,17 @@ public class CustomJsonMessageConverter implements HttpMessageConverter<SysEvent
  
 	public void write(SysEvent se, MediaType arg1, HttpOutputMessage out)
 			throws IOException, HttpMessageNotWritableException {
-		throw new UnsupportedOperationException("write not supported in " + this.getClass().getName());
+		logger.debug("writing se " + se);
+    	JsonFactory factory = new JsonFactory();
+    	ObjectMapper mapper = new ObjectMapper(factory);
+    	mapper.writeValue(out.getBody(), se);
 	}
 
 	@Override
 	public boolean canRead(Class<?> clazz, MediaType media) {
-		return SysEvent.class.equals(clazz) || SysEvent.class.isAssignableFrom(clazz);
+		final boolean b = SysEvent.class.equals(clazz) || SysEvent.class.isAssignableFrom(clazz);
+		logger.debug("canRead " + clazz + " " + media + " " + b);
+		return b;
 	}
 
 	@Override

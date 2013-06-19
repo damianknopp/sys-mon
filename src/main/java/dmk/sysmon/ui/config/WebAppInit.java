@@ -20,12 +20,12 @@ public class WebAppInit implements WebApplicationInitializer {
 		container.addListener(new ContextLoaderListener(rootContext));
 
 		// Create the dispatcher servlet's Spring application context
-		AnnotationConfigWebApplicationContext dispatcherContext = new AnnotationConfigWebApplicationContext();
+//		AnnotationConfigWebApplicationContext dispatcherContext = new AnnotationConfigWebApplicationContext();
 //		dispatcherContext.register(DispatcherConfig.class);
 
 		// Register and map the dispatcher servlet
 		ServletRegistration.Dynamic dispatcher = container.addServlet(
-				"dispatcher", new DispatcherServlet(dispatcherContext));
+				"dispatcher", new DispatcherServlet(rootContext));
 		dispatcher.setLoadOnStartup(1);
 		dispatcher.addMapping("/api/*");
 	}
