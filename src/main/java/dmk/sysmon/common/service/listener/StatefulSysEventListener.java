@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +13,8 @@ import org.springframework.stereotype.Component;
 
 import com.espertech.esper.client.EventBean;
 import com.espertech.esper.client.UpdateListener;
+
+import dmk.sysmon.common.domain.SysEvent;
 
 /**
  * simple stateful listener, store in a mail box when the listener fires
@@ -46,19 +50,27 @@ public class StatefulSysEventListener implements UpdateListener, StatefulMailbox
 			logger.debug("1st event received: " + newData[0].getUnderlying());
 		}
 
+		final WriteLock lock = rwl.writeLock();
 		try {
-			rwl.writeLock().lock();
+			lock.lock();
 			for (final EventBean eb : newData) {
+				final SysEvent se = (SysEvent)eb.getUnderlying();
 				final String msg = String.format(
-						" \"msg\": { \"%s\": \"%s\" } ", eb.getEventType(),
-						eb.getUnderlying());
+						" \"msg\": { \"%s\": \"%s\" } ", se.getEventType(),
+						se.getSysEvent());
 				logger.debug(msg);
 				if(logger.isTraceEnabled()){
 				}
 				mailbox.push(msg);
+				
+				if(logger.isDebugEnabled()){
+					logger.debug(mailbox.toString());
+				}
 			}
 		}finally{
-			rwl.writeLock().unlock();
+			if(lock != null){
+				lock.unlock();
+			}
 		}
 	}
 
@@ -70,13 +82,18 @@ public class StatefulSysEventListener implements UpdateListener, StatefulMailbox
 			logger.trace("getMailboxMessages");
 		}
 		final List<String> mbCopy = new LinkedList<>();
-		rwl.readLock().lock();
+		final ReadLock lock = rwl.readLock();
 		try{
-			Collections.copy(mbCopy, mailbox);
+			lock.lock();
+			logger.trace("mailbox "+ mailbox);
+//			Collections.copy(mbCopy, mailbox);
+			logger.trace("mb copy "+ mbCopy);
 		}finally{
-			rwl.readLock().unlock();
+			if(lock != null){
+				lock.unlock();
+			}
 		}
-		return mbCopy;
+		return mailbox;
 	}
 
 	/**

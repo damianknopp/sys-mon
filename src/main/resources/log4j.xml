@@ -15,12 +15,17 @@
   </logger>
 
 	<logger name="org.springframework" additivity="false">
-		<level value="trace" />
+		<level value="info" />
 		<appender-ref ref="console" />
 	</logger>
 
   <logger name="dmk" additivity="false">
     <level value="debug" />
+    <appender-ref ref="console" />
+  </logger>
+
+  <logger name="dmk.sysmon.common.service.listener" additivity="false">
+    <level value="trace" />
     <appender-ref ref="console" />
   </logger>
 

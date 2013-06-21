@@ -41,20 +41,20 @@ public class SysMonEndpoint implements ServletContextListener {
 	private static final Logger logger = LoggerFactory
 			.getLogger(SysMonEndpoint.class);
 
-//	@Autowired
-//	@Qualifier("statefulSysEventListener")
 	private StatefulSysEventListener statefulSysEventListener;
-	private ServletContext servletContext;
+	private static ServletContext servletContext;
 
 	public SysMonEndpoint() {
 		super();
-		logger.info("newing up sysmon endpoint");
+		logger.info("------ newing up sysmon endpoint");
+		logger.info(servletContext == null ? "null" : servletContext.toString());
 	}
 	
 	public void checkForListener(){
+		logger.debug("check for listener, servletContext =" + servletContext);
+		WebApplicationContext appCtx = WebApplicationContextUtils.getWebApplicationContext(servletContext);
+		logger.debug("appCtx " + appCtx);
 		if(this.statefulSysEventListener == null){
-			WebApplicationContext appCtx = WebApplicationContextUtils.getWebApplicationContext(servletContext);
-			logger.debug("appCtx " + appCtx);
 			this.statefulSysEventListener = (StatefulSysEventListener)appCtx.getBean("statefulSysEventListener");
 			logger.debug("listener = " + statefulSysEventListener);
 		}
@@ -70,16 +70,18 @@ public class SysMonEndpoint implements ServletContextListener {
 			logger.debug("listener is null!");
 		}
 		checkForListener();
+		logger.debug("listener = " + this.statefulSysEventListener);
 		final List<String> messages = this.statefulSysEventListener
 				.getMailboxMessages();
 
+		String msg = messages == null ? "null" : Integer.toString(messages.size());
 		if (logger.isDebugEnabled()) {
-			logger.debug(messages.size() + " messages");
+			logger.debug(msg + " messages");
 		}
-		this.statefulSysEventListener.clearMailbox();
-		if (logger.isDebugEnabled()) {
-			logger.debug("cleared mail box - " + messages.size() + " messages");
-		}
+//		this.statefulSysEventListener.clearMailbox();
+//		if (logger.isDebugEnabled()) {
+//			logger.debug("cleared mail box - " + msg + " messages");
+//		}
 
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		final ObjectMapper mapper = new ObjectMapper();
@@ -120,6 +122,7 @@ public class SysMonEndpoint implements ServletContextListener {
 
 	public void contextInitialized(ServletContextEvent servletContextEvent) {
 		servletContext = servletContextEvent.getServletContext();
+		logger.info("context init " + servletContext);
 		registerWebSocketEndpoint();
 	}
 
