@@ -1,7 +1,7 @@
 #>>lang=cf
 
 class window.WebsocketHelper
-  constructor: (@location = "ws://localhost:8080/sys-mon/echo", @onopen, @onmessge, @onclose) ->
+  constructor: (@location = "ws://localhost:8080/sys-mon/echo", @onopen, @onmessage, @onclose) ->
     @ws = undefined
 
   connect: (@location) ->
@@ -11,7 +11,7 @@ class window.WebsocketHelper
     
     if !@onmessage
       @ws.onmessage = (event) ->
-        console.log "#{event.data}"
+        console.log event
         json = JSON.parse event.data
         console.log json
     else
@@ -41,7 +41,7 @@ class window.WebsocketHelper
       @ws = this.connect(@location)
       console.log @ws
     else
-      console.log "reusing websocket connection"
+      #console.log "reusing websocket"
       tmp = JSON.stringify obj
       @ws.send tmp
           

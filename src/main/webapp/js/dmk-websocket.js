@@ -3,10 +3,10 @@
 
   window.WebsocketHelper = (function() {
 
-    function WebsocketHelper(location, onopen, onmessge, onclose) {
+    function WebsocketHelper(location, onopen, onmessage, onclose) {
       this.location = location != null ? location : "ws://localhost:8080/sys-mon/echo";
       this.onopen = onopen;
-      this.onmessge = onmessge;
+      this.onmessage = onmessage;
       this.onclose = onclose;
       this.ws = void 0;
     }
@@ -21,7 +21,7 @@
       if (!this.onmessage) {
         this.ws.onmessage = function(event) {
           var json;
-          console.log("" + event.data);
+          console.log(event);
           json = JSON.parse(event.data);
           return console.log(json);
         };
@@ -57,7 +57,6 @@
         this.ws = this.connect(this.location);
         return console.log(this.ws);
       } else {
-        console.log("reusing websocket connection");
         tmp = JSON.stringify(obj);
         return this.ws.send(tmp);
       }

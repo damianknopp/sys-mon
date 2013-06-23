@@ -14,19 +14,17 @@ import org.springframework.stereotype.Component;
 import com.espertech.esper.client.EventBean;
 import com.espertech.esper.client.UpdateListener;
 
-import dmk.sysmon.common.domain.SysEvent;
-
 /**
  * simple stateful listener, store in a mail box when the listener fires
  * 
  * @author dmknopp
  */
 @Component("statefulSysEventListener")
-public class StatefulSysEventListener implements UpdateListener, StatefulMailbox {
+public class StatefulSysEventListener<T> implements UpdateListener, StatefulMailbox<T> {
 	protected Logger logger = LoggerFactory
 			.getLogger(StatefulSysEventListener.class);
 
-	protected final LinkedList<String> mailbox;
+	protected final LinkedList<T> mailbox;
 	protected final ReentrantReadWriteLock rwl;
 
 	/**
@@ -54,14 +52,15 @@ public class StatefulSysEventListener implements UpdateListener, StatefulMailbox
 		try {
 			lock.lock();
 			for (final EventBean eb : newData) {
-				final SysEvent se = (SysEvent)eb.getUnderlying();
-				final String msg = String.format(
-						" \"msg\": { \"%s\": \"%s\" } ", se.getEventType(),
-						se.getSysEvent());
-				logger.debug(msg);
+				final T se = (T)eb.getUnderlying();
+//				final String msg = String.format(
+//						"{ \"msg\": { \"type\": \"%s\", \"val\": \"%s\" } }", se.getEventType(),
+//						se.getSysEvent());
+//				final String msg = se.toJson();
 				if(logger.isTraceEnabled()){
+					logger.debug(se.toString());
 				}
-				mailbox.push(msg);
+				mailbox.push(se);
 				
 				if(logger.isDebugEnabled()){
 					logger.debug(mailbox.toString());
@@ -77,23 +76,23 @@ public class StatefulSysEventListener implements UpdateListener, StatefulMailbox
 	/**
 	 * 
 	 */
-	public List<String> getMailboxMessages() {
+	public List<T> getMailboxMessages() {
 		if(logger.isTraceEnabled()){
 			logger.trace("getMailboxMessages");
 		}
-		final List<String> mbCopy = new LinkedList<>();
+		final List<T> mbCopy = new LinkedList<>();
 		final ReadLock lock = rwl.readLock();
 		try{
 			lock.lock();
-			logger.trace("mailbox "+ mailbox);
-//			Collections.copy(mbCopy, mailbox);
-			logger.trace("mb copy "+ mbCopy);
+			logger.trace("mailbox has "+ mailbox.size());
+			mbCopy.addAll(mailbox);
+			logger.trace("mb copy has "+ mbCopy.size());
 		}finally{
 			if(lock != null){
 				lock.unlock();
 			}
 		}
-		return mailbox;
+		return mbCopy;
 	}
 
 	/**

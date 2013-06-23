@@ -2,8 +2,8 @@ package dmk.sysmon.common.service.listener;
 
 import java.util.List;
 
-public interface StatefulMailbox {
+public interface StatefulMailbox<T> {
 
-	public List<String> getMailboxMessages();
+	public List<T> getMailboxMessages();
 	public void clearMailbox();
 }

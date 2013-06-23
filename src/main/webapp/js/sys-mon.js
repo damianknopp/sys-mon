@@ -13,29 +13,57 @@
     }
 
     SysMon.prototype.load = function() {
-      var onmessage, onopen, w1,
+      var onclose, onmessage, onopen, w1,
         _this = this;
       w1 = "ws://localhost:8080/sys-mon/events";
+      onclose = function() {
+        var disconnect;
+        console.log("closed connection..");
+        disconnect = "disconnected";
+        $(".activity").append(disconnect);
+        $(".status").html(disconnect);
+        $(".status").removeClass("label-info");
+        return $(".status").addClass("label-warning");
+      };
       onopen = function() {
         console.log("on open");
         $(".status").html("connected");
         $(".status").removeClass("label-warning");
         return $(".status").addClass("label-info");
       };
-      onmessage = function(msg) {
+      onmessage = function(msgs) {
+        var data;
         console.log("on message");
-        return $(".activity").append(msg);
+        if (msgs && msgs.data) {
+          data = JSON.parse(msgs.data);
+          if (_.isArray(data) && _.isEmpty(data)) {
+            return;
+          }
+          _.chain(data).reverse().map(function(msg) {
+            var el, li;
+            if (msg && msg.eventType && msg.sysEvent) {
+              el = msg.eventType + " - " + msg.sysEvent;
+            } else {
+              el = msg;
+            }
+            li = $("<li/>").html(el);
+            return $(".activity > ul").prepend(li);
+          }).value();
+          return $(".activity > ul").prepend($("<hr/>"));
+        } else {
+          return console.log(msgs);
+        }
       };
-      this.ws = new WebsocketHelper(w1, onopen, onmessage);
+      this.ws = new WebsocketHelper(w1, onopen, onmessage, onclose);
       this.ws.connect(w1);
       return this.ws;
     };
 
     SysMon.prototype.initRefresherView = function() {
-      var updateRefresh,
+      var clearEvents, updateRefresh,
         _this = this;
       updateRefresh = function(e) {
-        var $header, rate, tmpTimerTask;
+        var $msgs, rate, tmpTimerTask;
         rate = Number($(e.target).attr("rate"));
         tmpTimerTask = function() {
           var d, refreshMsg, t;
@@ -50,16 +78,20 @@
         if (window.timerTask) {
           window.clearInterval(window.timerTask);
         }
-        $header = $(".header");
+        $msgs = $(".activitiy-msg");
         if (rate === 0) {
-          $header.html("Activity Stream [off]");
+          $msgs.html("Activity Stream [off]");
           return;
         }
         window.timerTask = tmpTimerTask;
         window.setInterval(window.timerTask, rate);
-        return $header.html("Activity Stream [" + rate + " ms]");
+        return $msgs.html("Activity Stream [" + rate + " ms]");
       };
-      return $(".refresh-rate").on("click", updateRefresh);
+      clearEvents = function(e) {
+        return $(".activity > ul").html("");
+      };
+      $(".refresh-rate").on("click", updateRefresh);
+      return $(".event-clear").on("click", clearEvents);
     };
 
     return SysMon;

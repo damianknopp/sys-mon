@@ -1,8 +1,12 @@
 package dmk.sysmon.common.domain;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  * 
@@ -15,10 +19,10 @@ public class SysEvent {
 	private String sysEvent;
 
 	// empty constructor required by marshaller?
-	public SysEvent(){
+	public SysEvent() {
 		super();
 	}
-	
+
 	public SysEvent(String eventType, String sysEvent) {
 		super();
 		this.eventType = eventType;
@@ -57,6 +61,18 @@ public class SysEvent {
 	@Override
 	public boolean equals(Object obj) {
 		return EqualsBuilder.reflectionEquals(this, obj);
+	}
+
+	public String toJson() {
+		final ByteArrayOutputStream out = new ByteArrayOutputStream();
+		final ObjectMapper mapper = new ObjectMapper();
+		try {
+			mapper.writeValue(out, this);
+		} catch (IOException ioe) {
+			throw new RuntimeException(ioe.getCause());
+		}
+		final byte[] data = out.toByteArray();
+		return new String(data);
 	}
 
 }

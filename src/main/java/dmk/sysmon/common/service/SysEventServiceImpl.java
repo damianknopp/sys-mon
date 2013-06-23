@@ -13,7 +13,6 @@ import com.espertech.esper.client.EPServiceProvider;
 import com.espertech.esper.client.EPStatement;
 
 import dmk.sysmon.common.domain.SysEvent;
-import dmk.sysmon.common.service.listener.EchoSysEventListener;
 import dmk.sysmon.common.service.listener.StatefulSysEventListener;
 
 /**
@@ -30,7 +29,7 @@ public class SysEventServiceImpl implements SysEventService {
 	private EPServiceProvider epService;
 	
 	@Autowired
-	private StatefulSysEventListener statefulEchoListener;
+	private StatefulSysEventListener<SysEvent> statefulEchoListener;
 	
 	public SysEventServiceImpl(){
 		super();

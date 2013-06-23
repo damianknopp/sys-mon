@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
+import dmk.sysmon.common.domain.SysEvent;
 import dmk.sysmon.common.service.listener.StatefulSysEventListener;
 
 /**
@@ -41,7 +42,7 @@ public class SysMonEndpoint implements ServletContextListener {
 	private static final Logger logger = LoggerFactory
 			.getLogger(SysMonEndpoint.class);
 
-	private StatefulSysEventListener statefulSysEventListener;
+	private StatefulSysEventListener<SysEvent> statefulSysEventListener;
 	private static ServletContext servletContext;
 
 	public SysMonEndpoint() {
@@ -55,7 +56,7 @@ public class SysMonEndpoint implements ServletContextListener {
 		WebApplicationContext appCtx = WebApplicationContextUtils.getWebApplicationContext(servletContext);
 		logger.debug("appCtx " + appCtx);
 		if(this.statefulSysEventListener == null){
-			this.statefulSysEventListener = (StatefulSysEventListener)appCtx.getBean("statefulSysEventListener");
+			this.statefulSysEventListener = (StatefulSysEventListener<SysEvent>)appCtx.getBean("statefulSysEventListener");
 			logger.debug("listener = " + statefulSysEventListener);
 		}
 	}
@@ -71,17 +72,18 @@ public class SysMonEndpoint implements ServletContextListener {
 		}
 		checkForListener();
 		logger.debug("listener = " + this.statefulSysEventListener);
-		final List<String> messages = this.statefulSysEventListener
+		final List<SysEvent> messages = this.statefulSysEventListener
 				.getMailboxMessages();
 
 		String msg = messages == null ? "null" : Integer.toString(messages.size());
 		if (logger.isDebugEnabled()) {
 			logger.debug(msg + " messages");
 		}
-//		this.statefulSysEventListener.clearMailbox();
-//		if (logger.isDebugEnabled()) {
-//			logger.debug("cleared mail box - " + msg + " messages");
-//		}
+		
+		this.statefulSysEventListener.clearMailbox();
+		if (logger.isDebugEnabled()) {
+			logger.debug("cleared mail box - " + msg + " messages");
+		}
 
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		final ObjectMapper mapper = new ObjectMapper();
@@ -92,6 +94,8 @@ public class SysMonEndpoint implements ServletContextListener {
 		if (logger.isDebugEnabled()) {
 			logger.debug("json = " + json);
 		}
+
+		
 		return json;
 	}
 
