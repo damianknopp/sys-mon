@@ -8,6 +8,7 @@ import java.util.Map;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -21,10 +22,13 @@ import com.espertech.esper.client.EPServiceProviderManager;
 
 import dmk.sysmon.common.client.converter.CustomJsonMessageConverter;
 import dmk.sysmon.common.domain.SysEvent;
+import dmk.sysmon.ui.aspect.EventTypeCounterAspect;
+import dmk.sysmon.ui.aspect.LoggerAspect;
  
 @Configuration
 @EnableWebMvc
 @ComponentScan(basePackages="dmk.sysmon")
+@EnableAspectJAutoProxy
 public class WebConfig {
  
 	/**
@@ -90,4 +94,24 @@ public class WebConfig {
     public CustomJsonMessageConverter messageConverter(){
     	return new CustomJsonMessageConverter();
     }
+    
+    @Bean
+    public EventTypeCounterAspect ingestAspect(){
+    	return new EventTypeCounterAspect();
+    }
+    
+    /**
+     * same as <aspectj-autoproxy/>
+     * notice the static keyword in the method to work 
+     * nice as a BeanPostProcessor
+     * @return
+     */
+//    @Bean
+//    public static AnnotationAwareAspectJAutoProxyCreator aspectj(){
+//    	AnnotationAwareAspectJAutoProxyCreator proxy = new AnnotationAwareAspectJAutoProxyCreator();
+//    	proxy.setProxyTargetClass(true);
+//    	proxy.setInterceptorNames(new String[]{ "loggerAspect" });
+//    	proxy.setIncludePatterns(Arrays.asList(""));
+//    	return proxy;
+//    }
 }

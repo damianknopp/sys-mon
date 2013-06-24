@@ -65,8 +65,8 @@ public class SysEventIngestController {
 	@RequestMapping(value = "/sys-event", method = RequestMethod.POST)
 	public @ResponseBody
 	SysEvent post(@RequestBody final SysEvent event) {
+		logger.debug(event.toString());
 		if (logger.isTraceEnabled()) {
-			logger.debug(event.toString());
 		}
 		this.eventService.ingest(event);
 		return event;
